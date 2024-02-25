@@ -6,7 +6,7 @@
 package io.opentelemetry.javaagent.instrumentation.cassandra.v4_4;
 
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
-import static net.bytebuddy.matcher.ElementMatchers.isPublic;
+import static net.bytebuddy.matcher.ElementMatchers.isProtected;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
@@ -29,7 +29,7 @@ public class SessionBuilderInstrumentation implements TypeInstrumentation {
   @Override
   public void transform(TypeTransformer transformer) {
     transformer.applyAdviceToMethod(
-        isMethod().and(isPublic()).and(named("buildAsync")).and(takesArguments(0)),
+        isMethod().and(isProtected()).and(named("buildDefaultSessionAsync")).and(takesArguments(0)),
         SessionBuilderInstrumentation.class.getName() + "$BuildAdvice");
   }
 
@@ -38,8 +38,9 @@ public class SessionBuilderInstrumentation implements TypeInstrumentation {
 
     /**
      * Strategy: each time we build a connection to a Cassandra cluster, the
-     * com.datastax.oss.driver.api.core.session.SessionBuilder.buildAsync() method is called. The
-     * opentracing contribution is a simple wrapper, so we just have to wrap the new session.
+     * com.datastax.oss.driver.api.core.session.SessionBuilder.buildDefaultSessionAsync()
+     * method is called. The opentracing contribution is a simple wrapper, so we just have
+     * to wrap the new session.
      *
      * @param stage The fresh CompletionStage to patch. This stage produces session which is
      *     replaced with new session
